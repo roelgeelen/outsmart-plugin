@@ -1,4 +1,4 @@
-package com.differentdoors.outsmart.models;
+package com.differentdoors.outsmart.models.objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -41,4 +41,6 @@ public class WorkOrder {
     private Date deadline;
     @JsonProperty("ShortWorkDescription")
     private String shortWorkDescription;
+    @JsonProperty("InternalWorkDescription")
+    private String internalWorkDescription;
 }

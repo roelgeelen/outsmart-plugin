@@ -2,6 +2,7 @@ package com.differentdoors.outsmart.services;
 
 import com.differentdoors.outsmart.models.Filter;
 import com.differentdoors.outsmart.models.SResults;
+import com.differentdoors.outsmart.models.objects.Relation;
 import com.differentdoors.outsmart.models.objects.WorkOrder;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -11,6 +12,9 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -21,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class WorkOrderService {
+public class RelationService {
     @Value("${different_doors.outsmart.url}")
     private String URL;
     @Value("${different_doors.outsmart.token}")
@@ -39,22 +43,13 @@ public class WorkOrderService {
     @Qualifier("Outsmart")
     private RestTemplate restTemplate;
 
-    public SResults<WorkOrder> getWorkOrders(@Nullable String status, @Nullable String workStatus, @Nullable List<Filter> filters) throws JsonProcessingException {
+    public SResults<Relation> getRelation(@Nullable List<Filter> filters) throws JsonProcessingException {
         Map<String, String> urlParams = new HashMap<>();
-        urlParams.put("path", "GetWorkorders");
+        urlParams.put("path", "relations");
 
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(URL)
                 .queryParam("token", token)
-                .queryParam("software_token", software_token)
-                .queryParam("update_status", false);
-
-        if (status != null) {
-            builder.queryParam("status", status);
-        }
-
-        if (workStatus != null) {
-            builder.queryParam("workstatus", workStatus);
-        }
+                .queryParam("software_token", software_token);
 
         if (filters != null) {
             filters.forEach(f -> {
@@ -63,6 +58,22 @@ public class WorkOrderService {
                 builder.queryParam("operator[]", f.getOperator());
             });
         }
-        return objectMapper.readValue(restTemplate.getForObject(builder.buildAndExpand(urlParams).toUri(), String.class), new TypeReference<SResults<WorkOrder>>() {});
+
+        return objectMapper.readValue(restTemplate.getForObject(builder.buildAndExpand(urlParams).toUri(), String.class), new TypeReference<SResults<Relation>>() {});
+    }
+
+    public SResults<Relation> createRelation(Relation relation) throws JsonProcessingException {
+        Map<String, String> urlParams = new HashMap<>();
+        urlParams.put("path", "relations");
+
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(URL)
+                .queryParam("token", token)
+                .queryParam("software_token", software_token);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<Object> entity = new HttpEntity<>(objectMapper.writeValueAsString(relation), headers);
+
+        return objectMapper.readValue(restTemplate.postForObject(builder.buildAndExpand(urlParams).toUri(), entity, String.class), new TypeReference<SResults<Relation>>() {});
     }
 }
