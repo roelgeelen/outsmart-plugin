@@ -1,6 +1,7 @@
 package com.differentdoors.outsmart.services;
 
 import com.differentdoors.outsmart.models.Filter;
+import com.differentdoors.outsmart.models.SResult;
 import com.differentdoors.outsmart.models.SResults;
 import com.differentdoors.outsmart.models.objects.WorkOrder;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -16,9 +17,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.lang.reflect.Field;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class WorkOrderService {
@@ -63,6 +64,54 @@ public class WorkOrderService {
                 builder.queryParam("operator[]", f.getOperator());
             });
         }
-        return objectMapper.readValue(restTemplate.getForObject(builder.buildAndExpand(urlParams).toUri(), String.class), new TypeReference<SResults<WorkOrder>>() {});
+        return objectMapper.readValue(restTemplate.getForObject(builder.buildAndExpand(urlParams).toUri(), String.class), new TypeReference<>() {
+        });
+    }
+
+    public SResult<WorkOrder> getWorkOrder(String workOrderNo, @Nullable List<Filter> filters) throws JsonProcessingException {
+        Map<String, String> urlParams = new HashMap<>();
+        urlParams.put("path", "GetWorkorder");
+
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(URL)
+                .queryParam("token", token)
+                .queryParam("software_token", software_token)
+                .queryParam("update_status", false)
+                .queryParam("workorder_no", workOrderNo);
+
+        if (filters != null) {
+            filters.forEach(f -> {
+                builder.queryParam("key[]", f.getKey());
+                builder.queryParam("value[]", f.getValue());
+                builder.queryParam("operator[]", f.getOperator());
+            });
+        }
+        return objectMapper.readValue(restTemplate.getForObject(builder.buildAndExpand(urlParams).toUri(), String.class), new TypeReference<>() {
+        });
+    }
+
+    public SResult<String> updateWorkOrder(String workOrderNo, String rowId, WorkOrder workOrder) throws JsonProcessingException {
+        Map<String, String> urlParams = new HashMap<>();
+        urlParams.put("path", "UpdateWorkorder");
+
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(URL)
+                .queryParam("token", token)
+                .queryParam("software_token", software_token)
+                .queryParam("update_status", false);
+
+        if (workOrderNo != null) {
+            builder.queryParam("workorder_no", workOrderNo);
+        }
+        if (rowId != null) {
+            builder.queryParam("row_id", rowId);
+        }
+        // Get nonNull fields
+        Map<?, ?> map = objectMapper.readValue(objectMapper.writeValueAsString(workOrder), Map.class);
+        // Values to be updated
+        builder.query(map.keySet().stream()
+                .map(key -> key + "=" + map.get(key))
+                .collect(Collectors.joining("&")));
+
+        return objectMapper.readValue(restTemplate.getForObject(builder.buildAndExpand(urlParams).toUri(), String.class), new TypeReference<>() {
+        });
     }
 }
