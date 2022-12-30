@@ -16,5 +16,4 @@ import lombok.Setter;
 public class FreeFields {
     private String val_value_1;
     private String val_value_2;
-    private String val_value_3;
 }

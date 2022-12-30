@@ -5,19 +5,25 @@ import com.differentdoors.outsmart.models.SResult;
 import com.differentdoors.outsmart.models.SResults;
 import com.differentdoors.outsmart.models.objects.WorkOrder;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.lang.Nullable;
+import org.springframework.retry.RetryException;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -40,7 +46,8 @@ public class WorkOrderService {
     @Qualifier("Outsmart")
     private RestTemplate restTemplate;
 
-    public SResults<WorkOrder> getWorkOrders(@Nullable String status, @Nullable String workStatus, @Nullable List<Filter> filters) throws JsonProcessingException {
+    @Retryable(value = ResourceAccessException.class, maxAttempts = 3, backoff = @Backoff(delay = 1000))
+    public SResults<WorkOrder> getWorkOrders(@Nullable String status, @Nullable String workStatus, @Nullable List<Filter> filters) throws Exception {
         Map<String, String> urlParams = new HashMap<>();
         urlParams.put("path", "GetWorkorders");
 
@@ -67,8 +74,8 @@ public class WorkOrderService {
         return objectMapper.readValue(restTemplate.getForObject(builder.buildAndExpand(urlParams).toUri(), String.class), new TypeReference<>() {
         });
     }
-
-    public SResult<WorkOrder> getWorkOrder(String workOrderNo, @Nullable List<Filter> filters) throws JsonProcessingException {
+    @Retryable(value = ResourceAccessException.class, maxAttempts = 3, backoff = @Backoff(delay = 1000))
+    public SResult<WorkOrder> getWorkOrder(String workOrderNo, @Nullable List<Filter> filters) throws Exception {
         Map<String, String> urlParams = new HashMap<>();
         urlParams.put("path", "GetWorkorder");
 
@@ -88,8 +95,24 @@ public class WorkOrderService {
         return objectMapper.readValue(restTemplate.getForObject(builder.buildAndExpand(urlParams).toUri(), String.class), new TypeReference<>() {
         });
     }
+    @Retryable(value = ResourceAccessException.class, maxAttempts = 3, backoff = @Backoff(delay = 1000))
+    public SResults<WorkOrder> createWorkOrder(WorkOrder workOrder) throws Exception {
+        Map<String, String> urlParams = new HashMap<>();
+        urlParams.put("path", "PostWorkorders");
 
-    public SResult<String> updateWorkOrder(String workOrderNo, String rowId, WorkOrder workOrder) throws JsonProcessingException {
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(URL)
+                .queryParam("token", token)
+                .queryParam("software_token", software_token)
+                .queryParam("skip_duplicate_workorder_no", true);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<Object> entity = new HttpEntity<>(objectMapper.writeValueAsString(workOrder), headers);
+
+        return objectMapper.readValue(restTemplate.postForObject(builder.buildAndExpand(urlParams).toUri(), entity, String.class), new TypeReference<SResults<WorkOrder>>() {});
+    }
+    @Retryable(value = ResourceAccessException.class, maxAttempts = 3, backoff = @Backoff(delay = 1000))
+    public SResult<String> updateWorkOrder(String workOrderNo, String rowId, WorkOrder workOrder) throws Exception {
         Map<String, String> urlParams = new HashMap<>();
         urlParams.put("path", "UpdateWorkorder");
 
@@ -113,5 +136,10 @@ public class WorkOrderService {
 
         return objectMapper.readValue(restTemplate.getForObject(builder.buildAndExpand(urlParams).toUri(), String.class), new TypeReference<>() {
         });
+    }
+
+    @Recover
+    public RetryException recover(Exception t){
+        return new RetryException("Maximum retries reached: " + t.getMessage());
     }
 }

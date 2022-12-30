@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.time.LocalDate;
 import java.util.*;
 
 @AllArgsConstructor
@@ -17,6 +18,8 @@ import java.util.*;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class WorkOrder {
     private String id;
+    @JsonProperty("WorksheetCode")
+    private String worksheetCode;
     @JsonProperty("ProjectNr")
     private String projectNr;
     @JsonProperty("WorkorderNo")
@@ -25,7 +28,7 @@ public class WorkOrder {
     @JsonFormat(pattern = "dd-MM-yyyy")
     @DateTimeFormat(pattern = "dd-MM-yyyy")
     @JsonProperty("WorkDate")
-    private Date workDate;
+    private LocalDate workDate;
 
     @JsonProperty("WorkTime")
     private String workTime;
@@ -35,7 +38,7 @@ public class WorkOrder {
     @JsonFormat(pattern = "dd-MM-yyyy")
     @DateTimeFormat(pattern = "dd-MM-yyyy")
     @JsonProperty("WorkEndDate")
-    private Date workEndDate;
+    private LocalDate workEndDate;
 
     @JsonProperty("CustomerDebtorNr")
     private String customerDebtorNr;
@@ -70,7 +73,7 @@ public class WorkOrder {
     @JsonFormat(pattern = "dd-MM-yyyy")
     @DateTimeFormat(pattern = "dd-MM-yyyy")
     @JsonProperty("WorkDeadline")
-    private Date workDeadline;
+    private LocalDate workDeadline;
 
     @JsonProperty("PriorityCode")
     private boolean priorityCode;
@@ -106,6 +109,8 @@ public class WorkOrder {
             add("Montage SDH");
             add("Montage SDHZ");
             add("Montage VDH");
+            add("Montage HPT");
+            add("Montage Project");
         }
     };
 
