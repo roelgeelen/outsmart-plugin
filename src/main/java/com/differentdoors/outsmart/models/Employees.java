@@ -19,6 +19,12 @@ public abstract class Employees {
             put("89356", "Luuk");
             put("83298", "Jelle");
             put("89358", "Ruud");
+            put("89362", "Martien");
+            put("89364", "Wesley");
+            put("89367", "Danny");
+            put("89368", "Sem");
+            put("89370", "Wilco");
+            put("89371", "Davie");
         }
     };
 

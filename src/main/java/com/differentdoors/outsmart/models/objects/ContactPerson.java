@@ -13,16 +13,10 @@ import lombok.Setter;
 @Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Relation {
-    private String name;
-    private String debtor_number;
-    private String contact;
-    private String email;
-    private String email_workorder;
-    private String street;
-    private String postal_code;
-    private String city;
-    private String phone_number;
-    private String country;
-    private String remark;
+public class ContactPerson {
+    private String cpn_debtor_nr;
+    private String cpn_code;
+    private String cpn_name;
+    private String cpn_phone;
+    private String cpn_email;
 }

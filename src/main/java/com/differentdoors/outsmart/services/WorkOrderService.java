@@ -19,6 +19,7 @@ import org.springframework.retry.RetryException;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
@@ -45,6 +46,12 @@ public class WorkOrderService {
     @Autowired
     @Qualifier("Outsmart")
     private RestTemplate restTemplate;
+
+    @Scheduled(fixedRate = 5000000)
+    public void test() throws Exception {
+        SResult<WorkOrder> workOrder = getWorkOrder("5762741705", null);
+        String t = "";
+    }
 
     @Retryable(value = ResourceAccessException.class, maxAttempts = 3, backoff = @Backoff(delay = 1000))
     public SResults<WorkOrder> getWorkOrders(@Nullable String status, @Nullable String workStatus, @Nullable List<Filter> filters) throws Exception {

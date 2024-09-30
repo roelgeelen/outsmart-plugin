@@ -1,9 +1,7 @@
 package com.differentdoors.outsmart.services;
 
-import com.differentdoors.outsmart.models.Filter;
 import com.differentdoors.outsmart.models.SResult;
-import com.differentdoors.outsmart.models.SResults;
-import com.differentdoors.outsmart.models.objects.Relation;
+import com.differentdoors.outsmart.models.objects.ContactPerson;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,7 +12,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.lang.Nullable;
 import org.springframework.retry.RetryException;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
@@ -25,11 +22,10 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Service
-public class RelationService {
+public class ContactPersonService {
     @Value("${different_doors.outsmart.url}")
     private String URL;
     @Value("${different_doors.outsmart.token}")
@@ -48,28 +44,9 @@ public class RelationService {
     private RestTemplate restTemplate;
 
     @Retryable(value = ResourceAccessException.class, maxAttempts = 3, backoff = @Backoff(delay = 1000))
-    public SResults<Relation> getRelation(@Nullable List<Filter> filters) throws Exception {
+    public SResult<Integer> createContactPerson(ContactPerson cpn) throws Exception {
         Map<String, String> urlParams = new HashMap<>();
-        urlParams.put("path", "relations");
-
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(URL)
-                .queryParam("token", token)
-                .queryParam("software_token", software_token);
-
-        if (filters != null) {
-            filters.forEach(f -> {
-                builder.queryParam("key[]", f.getKey());
-                builder.queryParam("value[]", f.getValue());
-                builder.queryParam("operator[]", f.getOperator());
-            });
-        }
-
-        return objectMapper.readValue(restTemplate.getForObject(builder.buildAndExpand(urlParams).toUri(), String.class), new TypeReference<SResults<Relation>>() {});
-    }
-    @Retryable(value = ResourceAccessException.class, maxAttempts = 3, backoff = @Backoff(delay = 1000))
-    public SResult<Integer> createRelation(Relation relation) throws Exception {
-        Map<String, String> urlParams = new HashMap<>();
-        urlParams.put("path", "relations");
+        urlParams.put("path", "contactpersons");
 
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(URL)
                 .queryParam("token", token)
@@ -77,7 +54,7 @@ public class RelationService {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<Object> entity = new HttpEntity<>(objectMapper.writeValueAsString(relation), headers);
+        HttpEntity<Object> entity = new HttpEntity<>(objectMapper.writeValueAsString(cpn), headers);
 
         return objectMapper.readValue(restTemplate.postForObject(builder.buildAndExpand(urlParams).toUri(), entity, String.class), new TypeReference<SResult<Integer>>() {});
     }

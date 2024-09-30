@@ -1,0 +1,5 @@
+different_doors:
+  outsmart:
+    token: 151a19165253b5ba71f84f37c100b2e87eab0ec6218f69ced657cf7b9082ac1c
+    software_token: b24f0e9cb87c485256db62de5e8e392b9a5fb3aa
+    url: https://app.out-smart.com/openapi/8/{path}

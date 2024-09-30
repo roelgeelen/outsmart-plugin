@@ -8,6 +8,7 @@ import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @AllArgsConstructor
@@ -64,6 +65,8 @@ public class WorkOrder {
     private String customerZIPInvoice;
     @JsonProperty("CustomerCityInvoice")
     private String customerCityInvoice;
+    @JsonProperty("CustomerRemark")
+    private String customerRemark;
     @JsonProperty("PaymentMethod")
     private String paymentMethod;
     @JsonProperty("WorkDescription")
@@ -75,10 +78,21 @@ public class WorkOrder {
     @JsonProperty("WorkDeadline")
     private LocalDate workDeadline;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonProperty("CreationDate")
+    private LocalDateTime creationDate;
+
+    @JsonProperty("WorkDuration")
+    private String workDuration;
     @JsonProperty("PriorityCode")
     private boolean priorityCode;
     @JsonProperty("PriorityMessage")
     private String priorityMessage;
+    @JsonProperty("SolutionCode")
+    private String solutionCode;
+    @JsonProperty("SolutionMessage")
+    private String solutionMessage;
     @JsonProperty("ShortWorkDescription")
     private String shortWorkDescription;
     @JsonProperty("InternalWorkDescription")
@@ -99,6 +113,10 @@ public class WorkOrder {
     private String customerPhoneInvoice;
     @JsonProperty("TypeOfWork")
     private String typeOfWork;
+    @JsonProperty("CpnCode")
+    private String cpnCode;
+    @JsonProperty("Workperiods")
+    private List<WorkPeriod> workperiods;
     @JsonProperty("FreeFields")
     private FreeFields freeFields;
 
@@ -111,6 +129,7 @@ public class WorkOrder {
             add("Montage VDH");
             add("Montage HPT");
             add("Montage Project");
+            add("Overige");
         }
     };
 
